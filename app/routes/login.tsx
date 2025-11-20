@@ -1,17 +1,22 @@
 import React, { useEffect } from "react";
 import { Form, Input, Button, Card, Typography, message } from "antd";
-import { UserOutlined, LockOutlined, IdcardOutlined } from "@ant-design/icons";
+import { UserOutlined, LockOutlined } from "@ant-design/icons";
 import { useNavigate, Link } from "react-router";
 
 const { Title, Text } = Typography;
 
-type UserType = {
-  fullName?: string;
+type FieldType = {
   username?: string;
   password?: string;
 };
 
-export default function Signup() {
+type UserType = {
+  username?: string;
+  password?: string;
+  fullName?: string;
+};
+
+export default function Login() {
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -21,21 +26,20 @@ export default function Signup() {
     }
   }, [navigate]);
 
-  const onFinish = (values: UserType) => {
+  const onFinish = (values: FieldType) => {
     const users = JSON.parse(localStorage.getItem("users") || "[]");
-    const userExists = users.find(
-      (u: UserType) => u.username === values.username,
+    const user = users.find(
+      (u: UserType) =>
+        u.username === values.username && u.password === values.password,
     );
 
-    if (userExists) {
-      message.error("Username already exists!");
-      return;
+    if (user) {
+      localStorage.setItem("currentUser", JSON.stringify(user));
+      message.success("Login successful!");
+      navigate("/");
+    } else {
+      message.error("Invalid username or password");
     }
-
-    users.push(values);
-    localStorage.setItem("users", JSON.stringify(users));
-    message.success("Signup successful! Please login.");
-    navigate("/login");
   };
 
   return (
@@ -43,21 +47,19 @@ export default function Signup() {
       <Card className="w-full max-w-md shadow-lg" variant="borderless">
         <div className="text-center mb-8">
           <Title level={2} style={{ marginBottom: 0 }}>
-            Create Account
+            Welcome Back
           </Title>
-          <Text type="secondary">Sign up to get started</Text>
+          <Text type="secondary">Please sign in to your account</Text>
         </div>
 
-        <Form name="signup" onFinish={onFinish} layout="vertical" size="large">
-          <Form.Item
-            name="fullName"
-            rules={[
-              { required: true, message: "Please input your full name!" },
-            ]}
-          >
-            <Input prefix={<IdcardOutlined />} placeholder="Full Name" />
-          </Form.Item>
-
+        <Form
+          name="login"
+          initialValues={{ remember: true }}
+          onFinish={onFinish}
+          autoComplete="off"
+          layout="vertical"
+          size="large"
+        >
           <Form.Item
             name="username"
             rules={[{ required: true, message: "Please input your username!" }]}
@@ -74,13 +76,13 @@ export default function Signup() {
 
           <Form.Item>
             <Button type="primary" htmlType="submit" block>
-              Sign Up
+              Log in
             </Button>
           </Form.Item>
 
           <div className="text-center">
             <Text>
-              Already have an account? <Link to="/login">Log in</Link>
+              Don&apos;t have an account? <Link to="/signup">Sign up</Link>
             </Text>
           </div>
         </Form>
